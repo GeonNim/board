@@ -1,0 +1,13 @@
+docker pull postgres:latest
+도커 설치 버전은 맞는 걸로하면 된다. 지금은 17.2로 사용한다.
+
+docker run -p 5432:5432 --name sr-postgres -e POSTGRES_PASSWORD=qwer1234 -e TZ=Asia/Seoul -v /home/user/pgdata:/var/lib/postgresql/data -d postgres:17.2
+
+-v /home/user/pgdata:/var/lib/postgresql/data 이 부분은 로컬컴퓨터 경로로 변경해야한다.
+
+
+docker run -p 5432:5432 --name postgresDb -e POSTGRES_PASSWORD=qwer1234 -e TZ=Asia/Seoul -v /e/geon/pgdata:/var/lib/postgresql/data -d postgres:17.2 
+난 이걸로 변경했다.
+그후 실행
+docker exec -it postgresDb /bin/bash 
+
