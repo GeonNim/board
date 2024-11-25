@@ -22,4 +22,6 @@ COMMENT ON COLUMN board.deletedate IS '삭제일';
 COMMENT ON COLUMN board.board_state IS '상태';
 
 -- 게시글 전체 조회(상태값이 true이며 regdate를 기준으로 내림차순)
-SELECT * FROM board WHERE board_state = true ORDER BY regdate DESC
+SELECT * FROM board WHERE board_state = true ORDER BY regdate DESC 
+-- or 필요한 내용만 넣는다.
+SELECT board_id, writer, board_pass, title,regdate, content, regdate FROM board WHERE board_state = true ORDER BY regdate DESC
