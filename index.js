@@ -6,12 +6,7 @@ const app = express();
 
 app.use(express.json());
 
-app.use(
-  cors({
-    origin: 'http://localhost:3000',
-    credentials: true,
-  })
-);
+app.use(cors());
 
 app.get('/', (request, response) => {
   response.send('hello World test!');
@@ -19,5 +14,6 @@ app.get('/', (request, response) => {
 
 app.use(require('./routes/postRoute'));
 app.use(require('./routes/getRoute'));
+app.use(require('./routes/patchRoute'));
 
 app.listen(port, () => console.log(`Server running on ${port}`));

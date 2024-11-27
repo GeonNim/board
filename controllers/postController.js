@@ -10,6 +10,7 @@ exports.postBoard = async (req, res) => {
       message: '모든 내용을 작성해주세요.',
     });
   }
+  // console.log(req.body);
   try {
     const hash = await bcrypt.hash(board_pass, saltRounds);
     const values = [writer, hash, title, content];
