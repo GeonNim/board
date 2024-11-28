@@ -22,7 +22,7 @@ const bcrypt = require('bcrypt');
 //       return res.status(401).json({ error: '비밀번호가 틀렸습니다.' });
 //     }
 //     await pool.query(
-//       'UPDATE board SET title = $1, content = $2, updatedate = CURRENT_TIMESTAMP WHERE board_id = $3',
+//       'UPDATE board SET title = $1, content = $2, update = CURRENT_TIMESTAMP WHERE board_id = $3',
 //       [title, content, board_id]
 //     );
 //     await pool.query('COMMIT');
@@ -34,8 +34,7 @@ const bcrypt = require('bcrypt');
 // };
 
 exports.patchBoard = async (req, res) => {
-  const { board_id } = req.params;
-  const { board_pass, title, content } = req.body;
+  const { board_id, board_pass, title, content } = req.body;
 
   try {
     // 트랜잭션 시작
@@ -75,7 +74,7 @@ exports.patchBoard = async (req, res) => {
     console.log(title, content);
     // 게시글 업데이트
     await pool.query(
-      'UPDATE board SET title = $1, content = $2, updatedate = CURRENT_TIMESTAMP WHERE board_id = $3',
+      'UPDATE board SET title = $1, content = $2, update = CURRENT_TIMESTAMP WHERE board_id = $3',
       [title, content, board_id]
     );
 

@@ -15,5 +15,6 @@ app.get('/', (request, response) => {
 app.use(require('./routes/postRoute'));
 app.use(require('./routes/getRoute'));
 app.use(require('./routes/patchRoute'));
+app.use(require('./routes/delectRoute'));
 
 app.listen(port, () => console.log(`Server running on ${port}`));
