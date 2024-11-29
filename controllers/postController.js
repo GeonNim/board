@@ -29,7 +29,13 @@ exports.postBoard = async (req, res) => {
 };
 
 exports.postComment = async (req, res) => {
-  const { board_id, comment_writer, comment_pass, comment_content } = req.body;
+  const {
+    board_id,
+    parent_comment_id,
+    comment_writer,
+    comment_pass,
+    comment_content,
+  } = req.body;
 
   // 입력값 검증
   if (!comment_writer || !comment_pass || !comment_content) {
@@ -55,14 +61,35 @@ exports.postComment = async (req, res) => {
       });
     }
 
+    // 부모 댓글 존재 여부 확인 (대댓글인 경우)
+    if (parent_comment_id) {
+      const parentCheckResult = await pool.query(
+        'SELECT comment_id FROM comment WHERE comment_id = $1 AND comment_state = true',
+        [parent_comment_id]
+      );
+
+      if (parentCheckResult.rows.length === 0) {
+        await pool.query('ROLLBACK');
+        return res.status(404).json({
+          message: '부모 댓글이 존재하지 않거나 삭제되었습니다.',
+        });
+      }
+    }
+
     // 비밀번호 해싱
     const hash = await bcrypt.hash(comment_pass, 10);
 
-    // 댓글 등록
-    const values = [board_id, comment_writer, hash, comment_content];
+    // 댓글 또는 대댓글 등록
+    const values = [
+      board_id,
+      parent_comment_id,
+      comment_writer,
+      hash,
+      comment_content,
+    ];
     const commentResult = await pool.query(
-      `INSERT INTO comment (board_id, commnet_writer, commnet_pass, commnet_content)
-       VALUES ($1, $2, $3, $4) RETURNING *`,
+      `INSERT INTO comment (board_id, parent_comment_id, commnet_writer, commnet_pass, commnet_content)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       values
     );
 
