@@ -46,5 +46,19 @@ CREATE TABLE board_history (
   "title": "한심한 녀석 ",
   "content": "나약한 녀석"
 }
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO boardmaker;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO boardmaker;
+
+-- 댓글 테이블 생성
+CREATE TABLE comment (
+    comment_id SERIAL PRIMARY KEY,             
+    board_id INT NOT NULL,                     
+    parent_comment_id INT NULL,                
+    commnet_writer VARCHAR(100) NOT NULL,             
+	commnet_pass VARCHAR(100) NOT NULL,
+    commnet_content TEXT NOT NULL,            
+    regdate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, 
+    update TIMESTAMP NULL,             
+    delectdate TIMESTAMP NULL,              
+    comment_state BOOLEAN NOT NULL DEFAULT true, 
+    FOREIGN KEY (board_id) REFERENCES board(board_id), 
+    FOREIGN KEY (parent_comment_id) REFERENCES comment(comment_id) 
+);

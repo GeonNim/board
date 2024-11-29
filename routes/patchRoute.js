@@ -1,7 +1,8 @@
 const router = require('express').Router();
 
-const { patchBoard } = require('../controllers/patchController');
+const { patchBoard, patchComment } = require('../controllers/patchController');
 
 router.patch('/patchBoard', patchBoard);
+router.patch('/patchComment', patchComment);
 
 module.exports = router;
