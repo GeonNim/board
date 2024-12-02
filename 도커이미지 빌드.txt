@@ -1,0 +1,105 @@
+docker build -t geonnim/board:latest .
+
+docker login
+
+docker push geonnim/board:latest
+
+docker-project 폴더 생성 폴더 안에
+yaml파일 설정 후
+docker-compose.yml 작성
+
+dockerfile 생성
+
+docker 이미지 빌드
+docker build -t geonnim/board:latest .
+
+이미지 확인 // 꼭 안해도 된다.
+docker images
+
+docker-compose.yml이 있는 디렉토리로 이동한 후 컨테이너를 실행
+docker-compose up -d
+or
+.env 파일도 여기에 위치
+docker-compose --env-file .env up -d
+
+
+백업과 복원: PostgreSQL 데이터를 유지하려면 db_data 볼륨을 주기적으로 백업하세요:
+docker run --rm --volumes-from postgresDb -v $(pwd):/backup ubuntu tar cvf /backup/postgres_backup.tar /var/lib/postgresql/data
+
+
+컨테이너 재시작:
+docker-compose down
+볼륨도 삭제시
+docker-compose down -v
+
+컨테이너를 실행:
+docker-compose up -d
+
+컨테이너를 새로 빌드하고 실행:
+docker-compose up --build -d
+
+2) 기존 컨테이너와 볼륨 삭제
+
+docker-compose down -v
+3) 이미지 재빌드
+
+docker-compose build --no-cache
+4) 컨테이너 실행
+
+docker-compose up -d
+5) 컨테이너 로그 확인
+
+docker logs backend_container
+docker logs postgresDb
+
+추가사항
+
+
+6. 서비스 확인
+PostgreSQL 확인:
+
+pgAdmin4에 접속:
+브라우저에서 http://localhost:5050으로 접속.
+로그인:
+이메일: admin@admin.com
+비밀번호: admin
+PostgreSQL 서버 추가:
+Hostname: db (Docker Compose의 서비스 이름)
+Username: boardmaker
+Password: qwer1234
+Node.js 백엔드 확인:
+
+백엔드 컨테이너 확인:
+bash
+코드 복사
+docker logs backend_container
+API 테스트:
+http://localhost:8000에서 API 테스트. Postman이나 curl을 사용할 수도 있습니다.
+
+7. 전체 서비스의 네트워크 연결 구조
+Docker Compose는 기본적으로 모든 서비스가 bridge 네트워크로 연결되므로, 각 컨테이너는 서비스 이름(db, pgadmin, backend)으로 서로 접근할 수 있습니다.
+
+8. 문제 해결
+컨테이너 상태 확인:
+
+bash
+코드 복사
+docker ps
+로그 확인:
+
+bash
+코드 복사
+docker logs <컨테이너 이름>
+네트워크 확인:
+
+bash
+코드 복사
+docker network ls
+docker network inspect <네트워크 이름>
+
+
+//이 또한 yml파일있는 장소에서 실행
+데이터 초기화 및 기존 데이터 볼륨 삭제
+docker-compose down
+docker volume rm docker-project_db_data
+docker-compose up -d
