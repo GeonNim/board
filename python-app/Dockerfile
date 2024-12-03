@@ -1,13 +1,16 @@
-FROM python:3.10-slim
+FROM python:3
 
-# 컨테이너 내부 작업 디렉토리 설정
+# 작업 디렉토리 설정
 WORKDIR /app
 
-# 애플리케이션 파일 복사
-COPY ./python-app/app.py /app/app.py
+# 애플리케이션 코드 복사
+COPY . .
+
+# requirements.txt를 먼저 복사하여 캐싱 활용
+COPY requirements.txt .
 
 # 종속성 설치
-RUN pip install --no-cache-dir fastapi uvicorn transformers torch
+RUN pip install --no-cache-dir -r requirements.txt
 
-# 컨테이너 실행 시 애플리케이션 시작
+# 애플리케이션 실행
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "4000"]
