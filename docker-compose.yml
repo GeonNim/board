@@ -22,7 +22,6 @@ services:
       "apt-get update && apt-get install -y gettext-base &&
       envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/init.sql &&
       docker-entrypoint.sh postgres"
-
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
       interval: 10s
@@ -42,34 +41,43 @@ services:
 
   backend:
     build:
-      context: ../
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: back/Dockerfile
     image: geonnim/board:latest
     container_name: boardBack
     ports:
       - '8000:8000'
     environment:
-      DB_HOST: postgresDb
-      DB_PORT: 5432
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
       DB_USER: ${BOARD_USERNAME}
       DB_PASSWORD: ${BOARD_PASSWORD}
       DB_NAME: ${POSTGRES_DB}
     depends_on:
       db:
         condition: service_healthy
+      python-server:
+        condition: service_healthy
+
+  python-server:
+    build:
+      context: .
+      dockerfile: python-app/Dockerfile
+    image: python-server:latest
+    container_name: python-server
+    ports:
+      - '4000:4000'
 
 volumes:
   db_data:
     name: my_board_project_db_data
-
-networks:
-  pgnetwork:
 # 아래는 네트워크를 분리해서 사용함
 # services:
 #   db:
 #     build:
 #       context: .
 #       dockerfile: Dockerfile.postgres
+#     image: postgres:17.2
 #     container_name: postgresDb
 #     environment:
 #       POSTGRES_USER: ${POSTGRES_USER}
