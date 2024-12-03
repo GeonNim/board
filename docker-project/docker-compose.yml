@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.postgres
+    image: postgres:17.2
     container_name: postgresDb
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
