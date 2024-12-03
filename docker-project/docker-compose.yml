@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   db:
     build:
@@ -31,7 +30,7 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: pgadmin_container
+    container_name: pgadmin4
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
@@ -45,7 +44,7 @@ services:
       context: ../
       dockerfile: Dockerfile
     image: geonnim/board:latest
-    container_name: backend_container
+    container_name: boardBack
     ports:
       - '8000:8000'
     environment:
@@ -61,3 +60,6 @@ services:
 volumes:
   db_data:
     name: my_board_project_db_data
+
+networks:
+  pgnetwork:

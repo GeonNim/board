@@ -1,5 +1,5 @@
 const pool = require('../database/database');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 exports.delectBoard = async (req, res) => {
   const { board_id, board_pass } = req.body;

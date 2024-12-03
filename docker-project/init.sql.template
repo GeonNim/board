@@ -1,12 +1,10 @@
--- 데이터베이스 생성
-SELECT format('CREATE DATABASE %I', COALESCE(current_setting('BOARD_DBNAME', true), 'default_db'))
-WHERE NOT EXISTS (
-    SELECT FROM pg_database WHERE datname = COALESCE(current_setting('BOARD_DBNAME', true), 'default_db')
-)\gexec
-
--- 사용자 계정 생성 및 권한 부여
 DO $$
 BEGIN
+    -- 데이터베이스 생성
+    IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '${BOARD_DBNAME}') THEN
+        EXECUTE format('CREATE DATABASE %I', '${BOARD_DBNAME}');
+    END IF;
+
     -- 사용자 생성
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '${BOARD_USERNAME}') THEN
         EXECUTE format(
@@ -24,12 +22,11 @@ BEGIN
     );
 END $$;
 
+-- 데이터베이스에 연결
+\c ${BOARD_DBNAME}
 
-
-
-
--- 게시글 생성
-CREATE TABLE board (
+-- 테이블 생성
+CREATE TABLE IF NOT EXISTS board (
     board_id SERIAL PRIMARY KEY,
     writer VARCHAR(100) NOT NULL,
     board_pass VARCHAR(100) NOT NULL,
@@ -41,27 +38,8 @@ CREATE TABLE board (
     board_state BOOLEAN NOT NULL DEFAULT true
 );
 
--- board_history 테이블 생성
-CREATE TABLE IF NOT EXISTS board_history (
-    board_history_id SERIAL PRIMARY KEY,
-    board_id integer REFERENCES board (board_id),
-    board_history_title VARCHAR(100) NOT NULL,
-    board_history_content VARCHAR(1000) NOT NULL,
-    board_history_regdate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+-- 권한 부여: 테이블에 권한 부여
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${BOARD_USERNAME};
 
--- 댓글 테이블 생성
-CREATE TABLE IF NOT EXISTS comment (
-    comment_id SERIAL PRIMARY KEY,             
-    board_id INT NOT NULL,                     
-    parent_comment_id INT NULL,                
-    commnet_writer VARCHAR(100) NOT NULL,             
-    commnet_pass VARCHAR(100) NOT NULL,
-    commnet_content TEXT NOT NULL,            
-    regdate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, 
-    update TIMESTAMP NULL,             
-    delectdate TIMESTAMP NULL,              
-    comment_state BOOLEAN NOT NULL DEFAULT true, 
-    FOREIGN KEY (board_id) REFERENCES board(board_id), 
-    FOREIGN KEY (parent_comment_id) REFERENCES comment(comment_id) 
-);
+-- 권한 부여: SEQUENCE에 적합한 권한만 부여
+GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO ${BOARD_USERNAME};

@@ -1,0 +1,5 @@
+docker run -p 5432:5432 --name postgresDb -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=qwer1234 -e TZ=Asia/Seoul -v /d/DB/pgdata:/var/lib/postgresql/data -d postgres:17.2 
+
+docker run -p 8080:80  --name pgadmin4 -e 'PGADMIN_DEFAULT_EMAIL=yy4338@gmail.com' -e 'PGADMIN_DEFAULT_PASSWORD=ehzjtlfgdj' -d dpage/pgadmin4
+
+docker run -p 8000:8000 --name boardBack  -d geonnim/board
