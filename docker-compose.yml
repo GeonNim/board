@@ -56,8 +56,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      python-server:
-        condition: service_healthy
 
   python-server:
     build:
