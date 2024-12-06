@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.postgres
-    image: postgres:17.2
+    image: geonnim/postgres:17.2
     container_name: postgresDb
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -29,7 +29,7 @@ services:
       retries: 5
 
   pgadmin:
-    image: dpage/pgadmin4:latest
+    image: geonnim/pgadmin:latest
     container_name: pgadmin4
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
@@ -61,10 +61,32 @@ services:
     build:
       context: ./python-app
       dockerfile: Dockerfile
-    image: python-server:latest
+    image: geonnim/python-server:latest
     container_name: python-server
     ports:
       - '4000:4000'
+
+  python-tts-stt:
+    build:
+      context: ./python_tts_stt
+      dockerfile: Dockerfile
+    image: geonnim/python-tts-stt:latest
+    container_name: python-tts-stt
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: db
+      DATABASE_URL: 'postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}'
+    ports:
+      - '4001:4001'
+    volumes:
+      - ./python_tts_stt/temp:/app/temp
+      - ./vosk-model-small-ko-0.22:/app/vosk-model
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   db_data:

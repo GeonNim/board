@@ -1,5 +1,6 @@
 const pool = require('../database/database');
 const bcrypt = require('bcryptjs');
+const axios = require('axios');
 
 const saltRounds = 10;
 
@@ -106,5 +107,27 @@ exports.postComment = async (req, res) => {
     await pool.query('ROLLBACK');
     console.error('댓글 등록 중 오류:', error);
     return res.status(500).json({ message: '댓글 등록에 실패했습니다.' });
+  }
+};
+
+exports.predictText = async (req, res) => {
+  const { text } = req.body;
+
+  if (!text) {
+    return res.status(400).json({ message: '텍스트를 입력해주세요.' });
+  }
+
+  try {
+    // Docker Compose의 Python 서버에 요청
+    const response = await axios.post('http://python-server:4000/predict', {
+      text,
+    });
+
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error('Python API 호출 실패:', error.message);
+    res
+      .status(500)
+      .json({ message: 'Python API 호출 중 오류가 발생했습니다.' });
   }
 };
