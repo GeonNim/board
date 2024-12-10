@@ -15,6 +15,11 @@ model = AutoModelForSequenceClassification.from_pretrained(model_name)
 class PredictionRequest(BaseModel):
     text: str
 
+@app.get("/")
+def read_root():
+    return {"message": "Hello, World!"}
+
+
 @app.post("/predict")
 async def predict(request: PredictionRequest):
     inputs = tokenizer(request.text, return_tensors="pt")

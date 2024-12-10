@@ -25,7 +25,7 @@ END $$;
 -- 데이터베이스에 연결
 \c ${BOARD_DBNAME}
 
--- 테이블 생성
+-- board 테이블 생성
 CREATE TABLE IF NOT EXISTS board (
     board_id SERIAL PRIMARY KEY,
     writer VARCHAR(100) NOT NULL,
@@ -36,6 +36,31 @@ CREATE TABLE IF NOT EXISTS board (
     updatedate TIMESTAMP NULL,
     deletedate TIMESTAMP NULL,
     board_state BOOLEAN NOT NULL DEFAULT true
+);
+
+-- comment 테이블 생성
+CREATE TABLE IF NOT EXISTS comment (
+    comment_id SERIAL PRIMARY KEY,             
+    board_id INT NOT NULL,                     
+    parent_comment_id INT NULL,                
+    commnet_writer VARCHAR(100) NOT NULL,             
+    commnet_pass VARCHAR(100) NOT NULL,
+    commnet_content TEXT NOT NULL,            
+    regdate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, 
+    update TIMESTAMP NULL,             
+    delectdate TIMESTAMP NULL,              
+    comment_state BOOLEAN NOT NULL DEFAULT true, 
+    FOREIGN KEY (board_id) REFERENCES board(board_id), 
+    FOREIGN KEY (parent_comment_id) REFERENCES comment(comment_id) 
+);
+
+-- board_history 테이블 생성
+CREATE TABLE IF NOT EXISTS board_history (
+    board_history_id SERIAL PRIMARY KEY,
+    board_id INT REFERENCES board (board_id),
+    board_history_title VARCHAR(100) NOT NULL,
+    board_history_content VARCHAR(1000) NOT NULL,
+    board_history_regdate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 권한 부여: 테이블에 권한 부여

@@ -13,4 +13,5 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 애플리케이션 실행
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "4000"]
+CMD ["/bin/bash", "-c", "source /app/.env && uvicorn app:app --host 0.0.0.0 --port 4000"]
+
