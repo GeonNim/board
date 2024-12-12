@@ -16,4 +16,4 @@ COPY . .
 EXPOSE 8000
 
 # 애플리케이션 실행
-CMD ["/bin/bash", "-c", "source /app/.env && npm start"]
+CMD ["npm", "start"]
