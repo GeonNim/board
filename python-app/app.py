@@ -18,7 +18,23 @@ class PredictionRequest(BaseModel):
 @app.get("/")
 def read_root():
     return {"message": "Hello, World!"}
+@app.on_event("startup")
+async def startup_event():
+    try:
+        conn = await asyncpg.connect(
+            user="boardmaker",
+            password="qwer1324",
+            database="board",
+            host="db"
+        )
+        await conn.close()
+        print("Database connection successful")
+    except Exception as e:
+        print(f"Database connection failed: {e}")
 
+@app.on_event("shutdown")
+async def shutdown_event():
+    print("Application shutdown")
 
 @app.post("/predict")
 async def predict(request: PredictionRequest):

@@ -205,10 +205,14 @@ services:
       POSTGRES_USER: 'postgres'
       POSTGRES_PASSWORD: 'securepassword123'
       POSTGRES_DB: 'board'
+      BOARD_USERNAME: 'boardmaker'
+      BOARD_PASSWORD: 'qwer1324'
+      BOARD_DBNAME: 'board'
     ports:
       - '5432:5432'
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - swarm_network
     healthcheck:
@@ -231,11 +235,12 @@ services:
     networks:
       - swarm_network
     healthcheck:
-      test:
-        ['CMD-SHELL', 'wget --spider -S http://localhost:80/login || exit 1']
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      test: ['CMD-SHELL', 'curl -f http://localhost:80/login || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s # 초기 실행 대기 시간 추가
+
     deploy:
       replicas: 1
       restart_policy:
@@ -256,7 +261,7 @@ services:
       - source: env_config
         target: /app/.env
     healthcheck:
-      test: ['CMD-SHELL', 'wget -qO- http://localhost:8000 || exit 1']
+      test: ['CMD-SHELL', 'curl -f http://localhost:8000 || exit 1']
       interval: 10s
       timeout: 5s
       retries: 3
@@ -266,7 +271,7 @@ services:
         condition: on-failure
 
   python-server:
-    image: geonnim/python-server:2.0
+    image: geonnim/python-server:2.1
     environment:
       DB_HOST: 'db'
       DB_PORT: '5432'
@@ -281,7 +286,7 @@ services:
       - source: env_config
         target: /app/.env
     healthcheck:
-      test: ['CMD-SHELL', 'wget -qO- http://localhost:4000 || exit 1']
+      test: ['CMD-SHELL', 'curl -f http://localhost:4000 || exit 1']
       interval: 10s
       timeout: 5s
       retries: 3

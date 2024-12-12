@@ -1,29 +1,29 @@
 DO $$
 BEGIN
     -- 데이터베이스 생성
-    IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '${BOARD_DBNAME}') THEN
-        EXECUTE format('CREATE DATABASE %I', '${BOARD_DBNAME}');
+    IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'board') THEN
+        EXECUTE format('CREATE DATABASE %I', 'board');
     END IF;
 
     -- 사용자 생성
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '${BOARD_USERNAME}') THEN
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'boardmaker') THEN
         EXECUTE format(
             'CREATE USER %I WITH PASSWORD ''%s''',
-            '${BOARD_USERNAME}',
-            '${BOARD_PASSWORD}'
+            'boardmaker',
+            'qwer1324'
         );
     END IF;
 
     -- 권한 부여
     EXECUTE format(
         'GRANT ALL PRIVILEGES ON DATABASE %I TO %I',
-        '${BOARD_DBNAME}',
-        '${BOARD_USERNAME}'
+        'board',
+        'boardmaker'
     );
 END $$;
 
 -- 데이터베이스에 연결
-\c ${BOARD_DBNAME}
+\c board
 
 -- board 테이블 생성
 CREATE TABLE IF NOT EXISTS board (
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS board_history (
 );
 
 -- 권한 부여: 테이블에 권한 부여
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${BOARD_USERNAME};
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO boardmaker;
 
 -- 권한 부여: SEQUENCE에 적합한 권한만 부여
-GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO ${BOARD_USERNAME};
+GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO boardmaker;

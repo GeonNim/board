@@ -16,4 +16,5 @@ COPY . .
 EXPOSE 4000
 
 # 애플리케이션 실행
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "4000"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "4000", "--lifespan", "off"]
+
