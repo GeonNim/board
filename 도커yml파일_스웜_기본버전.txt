@@ -1,0 +1,118 @@
+ 아래는 도커 스웜 버전
+networks:
+  swarm_network:
+    driver: overlay
+    attachable: true
+
+services:
+  db:
+    image: postgres:17.2-alpine
+    configs:
+      - source: env_config
+        target: /app/.env
+    environment:
+      POSTGRES_USER: '${POSTGRES_USER}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+      POSTGRES_DB: '${POSTGRES_DB}'
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - swarm_network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    entrypoint:
+      [
+        '/bin/bash',
+        '-c',
+        'source /app/.env && exec docker-entrypoint.sh postgres',
+      ]
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none # 재시작 방지 (디버깅 시)
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    configs:
+      - source: env_config
+        target: /app/.env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: '${PGADMIN_DEFAULT_EMAIL}'
+      PGADMIN_DEFAULT_PASSWORD: '${PGADMIN_DEFAULT_PASSWORD}'
+    ports:
+      - '5050:80'
+    networks:
+      - swarm_network
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:80 || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none # 재시작 방지 (디버깅 시)
+
+  backend:
+    image: geonnim/board:1.0
+    configs:
+      - source: env_config
+        target: /app/.env
+    environment:
+      DB_HOST: 'db'
+      DB_PORT: '${DB_PORT}'
+      DB_USER: '${DB_USER}'
+      DB_PASSWORD: '${DB_PASSWORD}'
+      DB_NAME: '${DB_NAME}'
+    ports:
+      - '8000:8000'
+    networks:
+      - swarm_network
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:8000 || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  python-server:
+    image: geonnim/python-server:1.0
+    configs:
+      - source: env_config
+        target: /app/.env
+    environment:
+      DB_HOST: '${DB_HOST}'
+      DB_PORT: '${DB_PORT}'
+      DB_USER: '${DB_USER}'
+      DB_PASSWORD: '${DB_PASSWORD}'
+      DB_NAME: '${DB_NAME}'
+    ports:
+      - '4000:4000'
+    networks:
+      - swarm_network
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:4000 || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  db_data:
+    driver: local
+    name: board_db_data
+
+configs:
+  env_config:
+    external: true
