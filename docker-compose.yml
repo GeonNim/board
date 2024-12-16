@@ -1,109 +1,83 @@
-networks:
-  swarm_network:
-    driver: overlay
-    attachable: true
-
-configs:
-  env_config:
-    external: true
-
-volumes:
-  db_data:
-    driver: local
-    name: testBoard_db_data
-
 services:
   db:
     image: geonnim/postgres:17.2-alpine
-    configs:
-      - source: env_config
-        target: /app/.env
-    command:
-      [
-        '/bin/sh',
-        '-c',
-        'source /app/.env && exec docker-entrypoint.sh postgres',
-      ]
+    container_name: postgresDb
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      BOARD_USERNAME: ${BOARD_USERNAME}
+      BOARD_PASSWORD: ${BOARD_PASSWORD}
+      BOARD_DBNAME: ${POSTGRES_DB}
     ports:
       - '5432:5432'
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro # init.sql 파일을 컨테이너에 마운트
-    networks:
-      - swarm_network
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    command: >
+      /bin/bash -c
+      "apt-get update && apt-get install -y gettext-base &&
+      envsubst < /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/init.sql &&
+      docker-entrypoint.sh postgres"
     healthcheck:
-      test: ['CMD-SHELL', '[ "$DB_HOST" = "db" ] || exit 1']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
       interval: 10s
       timeout: 5s
-      retries: 3
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
+      retries: 5
+    networks:
+      - db-network
 
   pgadmin:
     image: dpage/pgadmin4:8.14
-    configs:
-      - source: env_config
-        target: /app/.env
-    command: ['/bin/sh', '-c', 'source /app/.env && exec /entrypoint.sh']
+    container_name: pgadmin4
     environment:
-      PGADMIN_LISTEN_PORT: '80'
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - '5050:80'
+    depends_on:
+      - db
     networks:
-      - swarm_network
-    healthcheck:
-      test: ['CMD-SHELL', '[ "$DB_HOST" = "db" ] || exit 1']
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
+      - db-network
 
   backend:
+    # build:
+    #   context: ../
+    #   dockerfile: Dockerfile
     image: geonnim/board:4.2
-    configs:
-      - source: env_config
-        target: /app/.env
-    command: ['/bin/sh', '-c', 'source /app/.env && exec npm start']
+    container_name: boardBack
     ports:
       - '8000:8000'
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${BOARD_USERNAME}
+      DB_PASSWORD: ${BOARD_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
-      - swarm_network
-    healthcheck:
-      test: ['CMD-SHELL', '[ "$DB_HOST" = "db" ] || exit 1']
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    deploy:
-      replicas: 2
-      restart_policy:
-        condition: on-failure
+      - backend-network
+      - db-network
 
   python-server:
-    image: geonnim/python-server:4.2
-    configs:
-      - source: env_config
-        target: /app/.env
-    command:
-      [
-        '/bin/sh',
-        '-c',
-        'source /app/.env && exec uvicorn app:app --host 0.0.0.0 --port 4000',
-      ]
+    # build:
+    #   context: ./python-app
+    #   dockerfile: Dockerfile
+    image: python-server:4.5
+    container_name: python-server
     ports:
       - '4000:4000'
     networks:
-      - swarm_network
-    healthcheck:
-      test: ['CMD-SHELL', '[ "$DB_HOST" = "db" ] || exit 1']
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
+      - backend-network
+
+volumes:
+  db_data:
+    name: my_board_project_db_data
+
+networks:
+  db-network:
+    driver: bridge
+  backend-network:
+    driver: bridge
