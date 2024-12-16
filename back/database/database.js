@@ -1,5 +1,5 @@
+// database.js
 const { Pool } = require('pg');
-
 require('dotenv').config();
 
 const pool = new Pool({
@@ -11,6 +11,19 @@ const pool = new Pool({
 });
 
 module.exports = pool;
+
+// PostgreSQL 쿼리 함수 정의
+module.exports.queryPostgres = async (query, params) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(query, params);
+    return result.rows;
+  } catch (error) {
+    throw error;
+  } finally {
+    client.release();
+  }
+};
 
 async function connectDB() {
   try {
@@ -26,5 +39,14 @@ async function connectDB() {
     console.error('데이터베이스 연결 에러:', err);
   }
 }
-
 connectDB();
+
+// MongoDB 연결
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb://localhost:27017/likes_db', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+module.exports.mongoose = mongoose;
