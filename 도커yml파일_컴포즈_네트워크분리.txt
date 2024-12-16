@@ -1,6 +1,11 @@
+아래는 네트워크를 분리해서 사용함
+
 services:
   db:
-    image: geonnim/postgres:17.2-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    image: postgres:17.2
     container_name: postgresDb
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -13,7 +18,7 @@ services:
       - '5432:5432'
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./init.sql.template:/docker-entrypoint-initdb.d/init.sql.template
     command: >
       /bin/bash -c
       "apt-get update && apt-get install -y gettext-base &&
@@ -28,7 +33,7 @@ services:
       - db-network
 
   pgadmin:
-    image: dpage/pgadmin4:8.14
+    image: dpage/pgadmin4:latest
     container_name: pgadmin4
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
@@ -41,16 +46,16 @@ services:
       - db-network
 
   backend:
-    # build:
-    #   context: ../
-    #   dockerfile: Dockerfile
-    image: geonnim/board:4.2
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    image: geonnim/board:latest
     container_name: boardBack
     ports:
       - '8000:8000'
     environment:
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
+      DB_HOST: postgresDb
+      DB_PORT: 5432
       DB_USER: ${BOARD_USERNAME}
       DB_PASSWORD: ${BOARD_PASSWORD}
       DB_NAME: ${POSTGRES_DB}
@@ -60,17 +65,6 @@ services:
     networks:
       - backend-network
       - db-network
-
-  python-server:
-    # build:
-    #   context: ./python-app
-    #   dockerfile: Dockerfile
-    image: python-server:4.5
-    container_name: python-server
-    ports:
-      - '4000:4000'
-    networks:
-      - backend-network
 
 volumes:
   db_data:
