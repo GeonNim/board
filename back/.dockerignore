@@ -1,0 +1,16 @@
+# node_modules와 로그 파일 제외
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Git 관련 파일 제외
+.git
+.gitignore
+
+# 환경 파일 제외 (보안 위험 방지)
+.env
+
+# IDE 및 시스템 파일 제외
+.DS_Store
+*.swp
+

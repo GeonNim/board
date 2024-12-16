@@ -1,0 +1,15 @@
+# Python 관련 불필요 파일 제외
+*.pyc
+*.pyo
+__pycache__/
+
+# 환경 파일 및 설정 제외
+.env
+
+# VCS 파일 제외
+.git
+.gitignore
+
+# 빌드 결과물 제외
+*.log
+*.db

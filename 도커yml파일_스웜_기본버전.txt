@@ -1,4 +1,3 @@
- 아래는 도커 스웜 버전
 networks:
   swarm_network:
     driver: overlay
